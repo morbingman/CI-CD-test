@@ -1,0 +1,15 @@
+appId: com.saucelabs.mydemoapp.rn
+---
+# Flow 6: Open the sidebar menu
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    text: "Products"
+
+- tapOn:
+    point: "105, 197"
+
+- assertVisible:
+    text: "Log In"

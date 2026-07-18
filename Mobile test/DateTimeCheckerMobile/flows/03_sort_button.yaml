@@ -1,0 +1,15 @@
+appId: com.saucelabs.mydemoapp.rn
+---
+# Flow 3: Sort button is tappable
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    text: "Products"
+
+- tapOn:
+    point: "896, 197"
+
+- assertVisible:
+    text: "Name - Ascending"

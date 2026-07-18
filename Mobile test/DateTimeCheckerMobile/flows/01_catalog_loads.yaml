@@ -1,0 +1,21 @@
+appId: com.saucelabs.mydemoapp.rn
+---
+# Flow 1: Verify the catalog screen loads correctly
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    text: "Products"
+
+- assertVisible:
+    text: "Sauce Labs Backpack"
+
+- assertVisible:
+    text: "Sauce Labs Bike Light"
+
+- assertVisible:
+    text: "$29.99"
+
+- assertVisible:
+    text: "$9.99"

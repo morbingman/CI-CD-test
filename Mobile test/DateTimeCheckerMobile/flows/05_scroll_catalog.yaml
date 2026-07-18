@@ -1,0 +1,26 @@
+appId: com.saucelabs.mydemoapp.rn
+---
+# Flow 5: Scroll down to reveal more products
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    text: "Sauce Labs Backpack"
+
+- assertVisible:
+    text: "Sauce Labs Bike Light"
+
+- scroll
+
+- assertVisible:
+    text: "Sauce Labs Bolt T-Shirt"
+
+- assertVisible:
+    text: "Sauce Labs Fleece Jacket"
+
+- assertVisible:
+    text: "$15.99"
+
+- assertVisible:
+    text: "$49.99"

@@ -1,0 +1,15 @@
+appId: com.saucelabs.mydemoapp.rn
+---
+# Flow 4: Cart icon is present and tappable
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    text: "Products"
+
+- tapOn:
+    point: "988, 197"
+
+- assertNotVisible:
+    text: "Sauce Labs Backpack"

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>DateTimeChecker.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+  </ItemGroup>
+
+  <!-- NUnit Console Runner installed as a local dotnet tool (see dotnet-tools.json) -->
+  <!-- Run with: run-tests.bat  OR  see README for manual command -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\DateTimeChecker\DateTimeChecker.csproj" />
+  </ItemGroup>
+</Project>

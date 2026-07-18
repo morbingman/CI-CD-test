@@ -1,0 +1,389 @@
+{
+  "info": {
+    "name": "DateTimeChecker API",
+    "_postman_id": "dtc-api-collection-v1",
+    "description": "API testing demo for DateTimeChecker — covers happy paths, boundary cases, leap year edge cases, and invalid input.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "GET /health — API is running",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status field is ok', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Happy Paths",
+      "item": [
+        {
+          "name": "Valid date — 15/06/2024",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"15\",\n  \"month\": \"6\",\n  \"year\": \"2024\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('isValid is true', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.isValid).to.be.true;",
+                  "});",
+                  "pm.test('Message confirms valid date', () => {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.message).to.include('valid date');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Valid date — 01/01/1000 (boundary year low)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"1\",\n  \"month\": \"1\",\n  \"year\": \"1000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('isValid is true', () => pm.response.json().isValid === true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Valid date — 31/12/3000 (boundary year high)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"31\",\n  \"month\": \"12\",\n  \"year\": \"3000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('isValid is true', () => pm.response.json().isValid === true);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Leap Year Edge Cases",
+      "item": [
+        {
+          "name": "Feb 29 — 2024 (leap year) ✅",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"29\",\n  \"month\": \"2\",\n  \"year\": \"2024\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Feb 29 is valid in leap year', () => {",
+                  "    pm.expect(pm.response.json().isValid).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Feb 29 — 2023 (not a leap year) ❌",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"29\",\n  \"month\": \"2\",\n  \"year\": \"2023\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Feb 29 is invalid in non-leap year', () => {",
+                  "    pm.expect(pm.response.json().isValid).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Feb 29 — 2000 (century leap year ÷400) ✅",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"29\",\n  \"month\": \"2\",\n  \"year\": \"2000\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Year 2000 is a leap year', () => {",
+                  "    pm.expect(pm.response.json().isValid).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Feb 29 — 1900 (century non-leap ÷100 not ÷400) ❌",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"29\",\n  \"month\": \"2\",\n  \"year\": \"1900\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Year 1900 is NOT a leap year', () => {",
+                  "    pm.expect(pm.response.json().isValid).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid Dates",
+      "item": [
+        {
+          "name": "April 31 (30-day month) ❌",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"31\",\n  \"month\": \"4\",\n  \"year\": \"2024\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('isValid is false', () => {",
+                  "    pm.expect(pm.response.json().isValid).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "November 31 (30-day month) ❌",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"31\",\n  \"month\": \"11\",\n  \"year\": \"2024\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('isValid is false', () => {",
+                  "    pm.expect(pm.response.json().isValid).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bad Input",
+      "item": [
+        {
+          "name": "Non-numeric day ❌",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"abc\",\n  \"month\": \"6\",\n  \"year\": \"2024\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error mentions day must be a number', () => {",
+                  "    pm.expect(pm.response.json().message).to.include('number');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Month out of range (13) ❌",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"15\",\n  \"month\": \"13\",\n  \"year\": \"2024\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error mentions month range', () => {",
+                  "    pm.expect(pm.response.json().message).to.include('between 1 and 12');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Year out of range (999) ❌",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"15\",\n  \"month\": \"6\",\n  \"year\": \"999\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error mentions year range', () => {",
+                  "    pm.expect(pm.response.json().message).to.include('between 1000 and 3000');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "All empty strings ❌",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/validate-date",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"\",\n  \"month\": \"\",\n  \"year\": \"\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('isValid is false', () => {",
+                  "    pm.expect(pm.response.json().isValid).to.be.false;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

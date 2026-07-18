@@ -1,0 +1,18 @@
+appId: com.saucelabs.mydemoapp.rn
+---
+# Flow 2: Tap a product and verify the detail screen opens
+
+- launchApp:
+    clearState: false
+
+- assertVisible:
+    text: "Sauce Labs Backpack"
+
+- tapOn:
+    text: "Sauce Labs Backpack"
+
+- assertVisible:
+    text: "Sauce Labs Backpack"
+
+- assertVisible:
+    text: "$29.99"

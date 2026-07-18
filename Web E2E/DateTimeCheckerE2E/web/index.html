@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Date Checker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --border:    #2e3147;
+      --accent:    #6c8cff;
+      --accent-dim:#3d4f99;
+      --text:      #e8eaf6;
+      --muted:     #7b80a0;
+      --valid:     #4caf82;
+      --invalid:   #e05c6b;
+      --radius:    10px;
+      --font:      'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .header p {
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.4fr;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1.1rem;
+      font-family: var(--font);
+      padding: 0.6rem 0.75rem;
+      text-align: center;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+    }
+
+    .field input::placeholder {
+      color: var(--border);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 6px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.97); }
+
+    #btnCheck {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    #btnCheck:hover { opacity: 0.88; }
+
+    #btnClear {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    #btnClear:hover { border-color: var(--accent); color: var(--text); }
+
+    #result {
+      border-radius: 6px;
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+      transition: opacity 0.2s;
+    }
+
+    #result.valid {
+      background: rgba(76, 175, 130, 0.12);
+      border: 1px solid var(--valid);
+      color: var(--valid);
+      display: block;
+    }
+
+    #result.invalid {
+      background: rgba(224, 92, 107, 0.12);
+      border: 1px solid var(--invalid);
+      color: var(--invalid);
+      display: block;
+    }
+
+    #result.loading {
+      background: rgba(108, 140, 255, 0.08);
+      border: 1px solid var(--accent-dim);
+      color: var(--muted);
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>Date Checker</h1>
+      <p>Validates dates against the Gregorian calendar</p>
+    </div>
+
+    <div class="fields">
+      <div class="field">
+        <label for="day">Day</label>
+        <input id="day" type="text" placeholder="DD" maxlength="2" data-testid="input-day" />
+      </div>
+      <div class="field">
+        <label for="month">Month</label>
+        <input id="month" type="text" placeholder="MM" maxlength="2" data-testid="input-month" />
+      </div>
+      <div class="field">
+        <label for="year">Year</label>
+        <input id="year" type="text" placeholder="YYYY" maxlength="4" data-testid="input-year" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="btnCheck" data-testid="btn-check">Check</button>
+      <button id="btnClear" data-testid="btn-clear">Clear</button>
+    </div>
+
+    <div id="result" data-testid="result"></div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000';
+
+    document.getElementById('btnCheck').addEventListener('click', async () => {
+      const day   = document.getElementById('day').value.trim();
+      const month = document.getElementById('month').value.trim();
+      const year  = document.getElementById('year').value.trim();
+      const result = document.getElementById('result');
+
+      result.className = 'loading';
+      result.textContent = 'Checking…';
+
+      try {
+        const res = await fetch(`${API}/validate-date`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ day, month, year })
+        });
+
+        const data = await res.json();
+        result.className = data.isValid ? 'valid' : 'invalid';
+        result.textContent = data.message;
+      } catch {
+        result.className = 'invalid';
+        result.textContent = 'Could not reach the API. Is it running?';
+      }
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+      document.getElementById('day').value   = '';
+      document.getElementById('month').value = '';
+      document.getElementById('year').value  = '';
+      const result = document.getElementById('result');
+      result.className = '';
+      result.textContent = '';
+      result.style.display = '';
+      document.getElementById('day').focus();
+    });
+
+    // Allow Enter key to trigger check
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('btnCheck').click();
+    });
+  </script>
+</body>
+</html>
