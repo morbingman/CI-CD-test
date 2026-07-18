@@ -22,18 +22,18 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:3000',
-    // Show browser during demo — change to false for headless CI
-    headless: false,
-    // Slow down actions so audience can follow along
+    // false locally (demo), true in CI (no display server)
+    headless: process.env.CI === 'true',
+    // Slow down actions so audience can follow along (skipped in CI)
     launchOptions: {
-      slowMo: 300,
+      slowMo: process.env.CI === 'true' ? 0 : 300,
     },
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
 
   reporter: [
-    ['list'],       // per-test colored output in terminal
-    ['html', { open: 'never' }],  // HTML report for CI/CD later
+    ['list'],
+    ['html', { open: 'never' }],
   ],
 });
