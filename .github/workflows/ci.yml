@@ -134,9 +134,7 @@ jobs:
 
       - name: Run Playwright tests (headless for CI)
         working-directory: "Web E2E/DateTimeCheckerE2E"
-        env:
-          PLAYWRIGHT_HEADLESS: true   # override headless setting for CI
-        run: npx playwright test --reporter=list --headed=false
+        run: npx playwright test --reporter=list
 
       - name: Upload Playwright report
         if: always()
